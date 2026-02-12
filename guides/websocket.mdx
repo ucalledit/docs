@@ -1,0 +1,133 @@
+---
+title: 'WebSocket'
+description: 'Real-time updates via WebSocket for RFQs and quotes'
+---
+
+The Totalis API provides a WebSocket endpoint for real-time updates on RFQs and quotes. This is essential for market makers who need to react quickly to new RFQs and for users tracking their active bets.
+
+## Connecting
+
+```
+ws://localhost:3000/ws        # Development
+wss://api.totalis.com/ws      # Production
+```
+
+## Authentication
+
+After connecting, send an auth message with your API key:
+
+```json
+{
+  "type": "auth",
+  "api_key": "api_live_xxxxxxxxxxxxxxxxxxxxx"
+}
+```
+
+You'll receive either:
+
+```json
+{ "type": "auth:success", "user_id": "did:privy:abc123", "user_type": "user" }
+```
+
+or:
+
+```json
+{ "type": "auth:error", "message": "Invalid API key" }
+```
+
+<Warning>
+  WebSocket only supports API key authentication. Privy JWT tokens are not supported.
+</Warning>
+
+## Subscribing to Channels
+
+After authenticating, subscribe to channels to receive events:
+
+```json
+{ "type": "subscribe", "channel": "rfqs:open" }
+```
+
+### Available Channels
+
+| Channel | Audience | Description |
+|---------|----------|-------------|
+| `rfqs:open` | Market makers | All new and open RFQs |
+| `rfq:{rfq_id}` | RFQ owner | Updates for a specific RFQ |
+| `mm:quotes:{mm_id}` | Market maker | Updates on your own quotes |
+
+## Events
+
+### RFQ Events
+
+| Event | Description | Data |
+|-------|-------------|------|
+| `rfq:created` | New RFQ created | Full RFQ object |
+| `rfq:cancelled` | RFQ cancelled | `{ rfq_id, reason }` |
+| `rfq:status` | RFQ status changed | `{ rfq_id, status, updated_at, accepted_quote_id }` |
+| `rfq:expired` | RFQ expired | `{ rfq_id }` |
+
+### Quote Events
+
+| Event | Description | Data |
+|-------|-------------|------|
+| `quote:submitted` | New quote submitted | Full quote object |
+| `quote:accepted` | Quote accepted by user | `{ quote_id, rfq_id, confirmation_deadline }` |
+| `quote:confirmed` | Quote confirmed by MM | `{ quote_id, rfq_id, execution_id }` |
+| `quote:executed` | On-chain escrow executed | `{ quote_id, rfq_id }` |
+| `quote:expired` | Quote expired | `{ quote_id, rfq_id }` |
+| `quote:rejected` | Quote rejected (another was accepted) | `{ quote_id, rfq_id, reason }` |
+
+## Keep-Alive
+
+Send periodic pings to keep the connection alive:
+
+```json
+{ "type": "ping" }
+```
+
+Response:
+
+```json
+{ "type": "pong", "timestamp": "2025-02-07T12:00:00.000Z" }
+```
+
+## Example: Market Maker Bot
+
+```javascript
+const ws = new WebSocket('wss://api.totalis.com/ws');
+
+ws.onopen = () => {
+  // Authenticate
+  ws.send(JSON.stringify({
+    type: 'auth',
+    api_key: 'api_live_xxxxxxxxxxxxxxxxxxxxx'
+  }));
+};
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data);
+
+  switch (msg.type) {
+    case 'auth:success':
+      // Subscribe to open RFQs
+      ws.send(JSON.stringify({ type: 'subscribe', channel: 'rfqs:open' }));
+      ws.send(JSON.stringify({ type: 'subscribe', channel: `mm:quotes:${msg.user_id}` }));
+      break;
+
+    case 'rfq:created':
+      console.log('New RFQ:', msg.data);
+      // Analyze and potentially submit a quote
+      break;
+
+    case 'quote:accepted':
+      console.log('Quote accepted, confirming...');
+      // Confirm the quote within 60 seconds
+      break;
+  }
+};
+
+// Keep alive
+setInterval(() => {
+  ws.send(JSON.stringify({ type: 'ping' }));
+}, 30000);
+```
