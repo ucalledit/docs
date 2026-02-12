@@ -1,97 +1,57 @@
 ---
-title: "Introduction"
-description: "Welcome to the new home for your documentation"
+title: "Totalis"
+description: "Decentralized parlay betting on Kalshi prediction markets with on-chain Solana escrow"
 ---
 
-## Setting up
+## Welcome to Totalis
 
-Get your documentation site up and running in minutes.
+Totalis is a request-for-quote (RFQ) marketplace for parlay bets on Kalshi prediction markets. Users create multi-leg parlay bets, market makers compete to offer the best payout odds, and trades are settled via on-chain Solana escrow.
 
-<Card
-  title="Start here"
-  icon="rocket"
-  href="/quickstart"
-  horizontal
->
-  Follow our three step quickstart guide.
-</Card>
+## Get Started
 
-## Make it yours
-
-Design a docs site that looks great and empowers your users.
-
-<Columns cols={2}>
-  <Card
-    title="Edit locally"
-    icon="pen-to-square"
-    href="/development"
-  >
-    Edit your docs locally and preview them in real time.
+<CardGroup cols={2}>
+  <Card title="Authentication" icon="key" href="/guides/authentication">
+    Set up Privy JWT or API key authentication.
   </Card>
-  <Card
-    title="Customize your site"
-    icon="palette"
-    href="/essentials/settings"
-  >
-    Customize the design and colors of your site to match your brand.
+  <Card title="RFQ Lifecycle" icon="arrows-spin" href="/guides/lifecycle">
+    Understand how an RFQ flows from creation to settlement.
   </Card>
-    <Card
-    title="Set up navigation"
-    icon="map"
-    href="/essentials/navigation"
-  >
-    Organize your docs to help users find what they need and succeed with your product.
+  <Card title="WebSocket" icon="bolt" href="/guides/websocket">
+    Connect to real-time updates for RFQs and quotes.
   </Card>
-  <Card
-    title="API documentation"
-    icon="terminal"
-    href="/api-reference/introduction"
-  >
-    Auto-generate API documentation from OpenAPI specifications.
+  <Card title="API Reference" icon="code" href="/api-reference/introduction">
+    Explore all API endpoints.
   </Card>
-</Columns>
+</CardGroup>
 
-## Create beautiful pages
+## For Users
 
-Everything you need to create world-class documentation.
+Create parlay bets across multiple Kalshi prediction markets and get competitive quotes from market makers.
 
-<Columns cols={2}>
-  <Card
-    title="Write with MDX"
-    icon="pen-fancy"
-    href="/essentials/markdown"
-  >
-    Use MDX to style your docs pages.
-  </Card>
-  <Card
-    title="Code samples"
-    icon="code"
-    href="/essentials/code"
-  >
-    Add sample code to demonstrate how to use your product.
-  </Card>
-  <Card
-    title="Images"
-    icon="image"
-    href="/essentials/images"
-  >
-    Display images and other media.
-  </Card>
-  <Card
-    title="Reusable snippets"
-    icon="recycle"
-    href="/essentials/reusable-snippets"
-  >
-    Write once and reuse across your docs.
-  </Card>
-</Columns>
+<Steps>
+  <Step title="Create an RFQ">
+    Submit a parlay bet request with 2-5 legs and your bet amount.
+  </Step>
+  <Step title="Receive Quotes">
+    Market makers compete to offer you the best payout odds.
+  </Step>
+  <Step title="Accept and Settle">
+    Accept the best quote. Funds are locked in on-chain escrow and automatically settled when markets resolve.
+  </Step>
+</Steps>
 
-## Need inspiration?
+## For Market Makers
 
-<Card
-  title="See complete examples"
-  icon="stars"
-  href="https://mintlify.com/customers"
->
-  Browse our showcase of exceptional documentation sites.
-</Card>
+Monitor incoming RFQs in real-time, submit competitive quotes, and earn the spread.
+
+<Steps>
+  <Step title="Connect via WebSocket">
+    Subscribe to the `rfqs:open` channel to receive new RFQs instantly.
+  </Step>
+  <Step title="Submit Quotes">
+    Analyze legs and submit your payout odds.
+  </Step>
+  <Step title="Confirm Trades">
+    When a user accepts your quote, confirm within 60 seconds to lock in the trade.
+  </Step>
+</Steps>

@@ -1,0 +1,72 @@
+---
+title: 'Authentication'
+description: 'How to authenticate with the Totalis API'
+---
+
+The Totalis API supports two authentication methods. Choose based on your integration type.
+
+## Privy JWT Token
+
+For web applications using [Privy](https://privy.io) authentication. After a user logs in via Privy, your frontend receives a JWT token.
+
+Send it in the `Authorization` header:
+
+```bash
+curl -X GET https://api.totalis.com/rfqs \
+  -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIs..."
+```
+
+<Note>
+  Privy JWT tokens are only supported for REST API calls. WebSocket connections require API keys.
+</Note>
+
+## API Keys
+
+For programmatic access, trading bots, and WebSocket connections. API keys use the format `api_live_xxxxxxxxxxxxxxxxxxxxx`.
+
+Send it in the `UCALLEDIT_API_KEY` header:
+
+```bash
+curl -X GET https://api.totalis.com/rfqs \
+  -H "UCALLEDIT_API_KEY: api_live_abc123def456ghi789"
+```
+
+### Generating API Keys
+
+You can generate API keys via the API:
+
+```bash
+curl -X POST https://api.totalis.com/user/api-keys \
+  -H "Authorization: Bearer <your-privy-token>" \
+  -H "Content-Type: application/json" \
+  -d '{"name": "My Trading Bot"}'
+```
+
+<Warning>
+  The full API key is only returned once at creation time. Save it securely.
+</Warning>
+
+### Key Format
+
+| Component | Example | Description |
+|-----------|---------|-------------|
+| Prefix | `api_live_` | Environment indicator (`live` or `test`) |
+| Secret | `abc123def456...` | Random secret portion |
+| Full key | `api_live_abc123def456ghi789` | Complete key for authentication |
+
+### Key Lifecycle
+
+- **Active** — Key is valid and can be used for authentication
+- **Revoked** — Key has been manually revoked and will be rejected
+- **Expired** — Key has passed its expiration date
+
+## Admin Authentication
+
+Admin endpoints require a separate `x-admin-api-key` header:
+
+```bash
+curl -X GET https://api.totalis.com/admin/api-keys \
+  -H "x-admin-api-key: <admin-key>"
+```
+
+This key is configured server-side via the `RFQ_ADMIN_API_KEY` environment variable.

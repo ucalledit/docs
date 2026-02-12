@@ -1,33 +1,84 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: 'API Overview'
+description: 'Totalis Parlay RFQ API — a decentralized request-for-quote marketplace for parlay bets'
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Base URL
 
-## Welcome
+```
+https://api.totalis.com
+```
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+For local development:
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+```
+http://localhost:3000
+```
 
 ## Authentication
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+The API supports two authentication methods:
+
+<CardGroup cols={2}>
+  <Card title="Privy JWT Token" icon="key">
+    For web applications using Privy authentication.
+
+    ```
+    Authorization: Bearer <token>
+    ```
+
+    Supported for **REST API only**.
+  </Card>
+  <Card title="API Key" icon="lock">
+    For programmatic access, bots, and WebSocket connections.
+
+    ```
+    UCALLEDIT_API_KEY: api_live_xxxxxxxxxxxxxxxxxxxxx
+    ```
+
+    Supported for **REST API + WebSocket**.
+  </Card>
+</CardGroup>
+
+<Note>
+  WebSocket connections require API keys. Privy JWT tokens are not supported for WebSocket.
+</Note>
+
+## Endpoint Groups
+
+<CardGroup cols={2}>
+  <Card title="RFQs" icon="file-invoice" href="/api-reference/rfqs/create">
+    Create, list, and manage Requests for Quote as a user.
+  </Card>
+  <Card title="Market Maker" icon="chart-line" href="/api-reference/mm/list-rfqs">
+    View open RFQs, submit quotes, and confirm trades as a market maker.
+  </Card>
+  <Card title="Markets" icon="store" href="/api-reference/markets/list">
+    Browse cached Kalshi prediction markets.
+  </Card>
+  <Card title="User" icon="user" href="/api-reference/user/get-profile">
+    Manage your profile, API keys, and Solana wallet.
+  </Card>
+  <Card title="Admin" icon="shield" href="/api-reference/admin/create-api-key">
+    Administrative API key management.
+  </Card>
+  <Card title="Status" icon="heart-pulse" href="/api-reference/status/health">
+    System health and sync observability.
+  </Card>
+</CardGroup>
+
+## Error Format
+
+All errors follow a consistent format:
 
 ```json
-"security": [
-  {
-    "bearerAuth": []
+{
+  "error": {
+    "code": "ERROR_CODE",
+    "message": "Human-readable error message",
+    "details": {}
   }
-]
+}
 ```
+
+Common error codes include `UNAUTHORIZED`, `FORBIDDEN`, `NOT_FOUND`, `INVALID_REQUEST`, `CONFLICT`, `INSUFFICIENT_BALANCE`, `RFQ_EXPIRED`, `QUOTE_EXPIRED`, and `INTERNAL_ERROR`.

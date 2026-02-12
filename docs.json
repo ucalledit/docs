@@ -1,7 +1,7 @@
 {
   "$schema": "https://mintlify.com/docs.json",
   "theme": "mint",
-  "name": "Mint Starter Kit",
+  "name": "Totalis",
   "colors": {
     "primary": "#16A34A",
     "light": "#07C983",
@@ -14,73 +14,88 @@
         "tab": "Guides",
         "groups": [
           {
-            "group": "Getting started",
+            "group": "Getting Started",
             "pages": [
               "index",
-              "quickstart",
-              "development"
-            ]
-          },
-          {
-            "group": "Customization",
-            "pages": [
-              "essentials/settings",
-              "essentials/navigation"
-            ]
-          },
-          {
-            "group": "Writing content",
-            "pages": [
-              "essentials/markdown",
-              "essentials/code",
-              "essentials/images",
-              "essentials/reusable-snippets"
-            ]
-          },
-          {
-            "group": "AI tools",
-            "pages": [
-              "ai-tools/cursor",
-              "ai-tools/claude-code",
-              "ai-tools/windsurf"
+              "guides/authentication",
+              "guides/lifecycle",
+              "guides/websocket"
             ]
           }
         ]
       },
       {
-        "tab": "API reference",
+        "tab": "API Reference",
         "groups": [
           {
-            "group": "API documentation",
+            "group": "Overview",
             "pages": [
               "api-reference/introduction"
             ]
           },
           {
-            "group": "Endpoint examples",
+            "group": "RFQs",
             "pages": [
-              "api-reference/endpoint/get",
-              "api-reference/endpoint/create",
-              "api-reference/endpoint/delete",
-              "api-reference/endpoint/webhook"
+              "api-reference/rfqs/create",
+              "api-reference/rfqs/list",
+              "api-reference/rfqs/get",
+              "api-reference/rfqs/cancel",
+              "api-reference/rfqs/list-quotes",
+              "api-reference/rfqs/accept-quote"
+            ]
+          },
+          {
+            "group": "Market Maker",
+            "pages": [
+              "api-reference/mm/list-rfqs",
+              "api-reference/mm/submit-quote",
+              "api-reference/mm/list-quotes",
+              "api-reference/mm/confirm-quote"
+            ]
+          },
+          {
+            "group": "Markets",
+            "pages": [
+              "api-reference/markets/list"
+            ]
+          },
+          {
+            "group": "User",
+            "pages": [
+              "api-reference/user/get-profile",
+              "api-reference/user/update-username",
+              "api-reference/user/check-username",
+              "api-reference/user/create-api-key",
+              "api-reference/user/list-api-keys",
+              "api-reference/user/revoke-api-key",
+              "api-reference/user/get-wallet",
+              "api-reference/user/airdrop-sol",
+              "api-reference/user/airdrop-usdc",
+              "api-reference/user/get-blockhash",
+              "api-reference/user/submit-tx"
+            ]
+          },
+          {
+            "group": "Admin",
+            "pages": [
+              "api-reference/admin/create-api-key",
+              "api-reference/admin/list-api-keys",
+              "api-reference/admin/get-api-key",
+              "api-reference/admin/revoke-api-key"
+            ]
+          },
+          {
+            "group": "Status",
+            "pages": [
+              "api-reference/status/health",
+              "api-reference/status/sync"
             ]
           }
         ]
       }
     ],
     "global": {
-      "anchors": [
-        {
-          "anchor": "Documentation",
-          "href": "https://mintlify.com/docs",
-          "icon": "book-open-cover"
-        },
-        {
-          "anchor": "Blog",
-          "href": "https://mintlify.com/blog",
-          "icon": "newspaper"
-        }
-      ]
+      "anchors": []
     }
   },
   "logo": {
@@ -88,35 +103,26 @@
     "dark": "/logo/dark.svg"
   },
   "navbar": {
-    "links": [
-      {
-        "label": "Support",
-        "href": "mailto:hi@mintlify.com"
-      }
-    ],
     "primary": {
       "type": "button",
       "label": "Dashboard",
-      "href": "https://dashboard.mintlify.com"
+      "href": "https://app.totalis.com"
     }
   },
   "contextual": {
     "options": [
-     "copy",
-     "view",
-     "chatgpt",
-     "claude",
-     "perplexity",
-     "mcp",
-     "cursor",
-     "vscode"
-   ]
+      "copy",
+      "view",
+      "chatgpt",
+      "claude",
+      "cursor"
+    ]
   },
   "footer": {
     "socials": {
-      "x": "https://x.com/mintlify",
-      "github": "https://github.com/mintlify",
-      "linkedin": "https://linkedin.com/company/mintlify"
+      "x": "https://x.com/totalis",
+      "github": "https://github.com/totalis"
     }
-  }
+  },
+  "openapi": ["/api-reference/openapi.json"]
 }
