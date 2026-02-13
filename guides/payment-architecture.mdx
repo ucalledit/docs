@@ -1,0 +1,156 @@
+---
+title: 'Payment Architecture'
+description: 'How on-chain escrow works with Privy TEE wallets and oracle-sponsored gas'
+---
+
+## Overview
+
+Totalis uses on-chain Solana escrow accounts to hold both the user's stake and the market maker's risk capital for the duration of a parlay bet. All wallet signing is done server-side via **Privy TEE (Trusted Execution Environment) wallets**, so users never need to manually sign transactions.
+
+## Architecture Diagram
+
+```
+User (Frontend)                Backend (Oracle)              Privy TEE              Solana
+     │                              │                          │                     │
+     │  1. Login via Privy          │                          │                     │
+     │─────────────────────────────>│                          │                     │
+     │                              │                          │                     │
+     │  2. addSessionSigners()      │                          │                     │
+     │  (grants key quorum access)  │                          │                     │
+     │─────────────────────────────>│                          │                     │
+     │                              │                          │                     │
+     │  3. Accept quote / MM confirm│                          │                     │
+     │─────────────────────────────>│                          │                     │
+     │                              │                          │                     │
+     │                              │── create_parlay ────────────────────────────────>│
+     │                              │  (oracle signs locally)                         │
+     │                              │                                                 │
+     │                              │── build deposit_user tx ─>│                     │
+     │                              │                           │── sign (TEE) ──────>│
+     │                              │<─ signed tx ──────────────│                     │
+     │                              │── oracle co-signs + broadcast ──────────────────>│
+     │                              │                                                 │
+     │                              │── build deposit_mm tx ───>│                     │
+     │                              │                           │── sign (TEE) ──────>│
+     │                              │<─ signed tx ──────────────│                     │
+     │                              │── oracle co-signs + broadcast ──────────────────>│
+```
+
+## Key Design Decisions
+
+### Oracle-Sponsored Gas
+
+The oracle keypair pays gas fees for all transactions, so **users and market makers never need SOL** in their wallets — only USDC for their stakes.
+
+| Transaction | Fee Payer | Signers |
+|-------------|-----------|---------|
+| `create_parlay` | Oracle | Oracle + escrow token account |
+| `deposit_user` | Oracle | Oracle + User (via Privy TEE) |
+| `deposit_mm` | Oracle | Oracle + MM (via Privy TEE) |
+| `settle` | Oracle | Oracle |
+| `cancel_parlay` | Oracle | Oracle |
+| `close_account` | Oracle | Oracle |
+
+### Privy TEE Wallets with Session Signers
+
+Privy embedded wallets run inside a **Trusted Execution Environment**. The private key never leaves the TEE — not even Privy can extract it. Server-side signing works via **session signers** (key quorums):
+
+1. **Frontend** calls `addSessionSigners()` with the app's key quorum ID
+2. User sees a Privy consent dialog and approves
+3. **Backend** can now request signing via `signTransaction()` with the `authorization_private_key`
+
+This is semi-custodial: the user explicitly grants and can revoke signing permission.
+
+### `signTransaction` vs `signAndSendTransaction`
+
+We use Privy's **`signTransaction`** (sign-only) instead of `signAndSendTransaction` (sign + broadcast) for deposit transactions. This is critical because:
+
+- **`signAndSendTransaction`** broadcasts via Privy's RPC, which may have different blockhash state than our RPC (Helius), causing "Blockhash not found" errors
+- **`signTransaction`** just signs the transaction bytes and returns them. We then add the oracle's signature and broadcast via our own RPC, ensuring blockhash consistency
+
+```typescript
+// 1. Build tx with our RPC's blockhash, oracle as fee payer
+const { blockhash } = await connection.getLatestBlockhash();
+const msg = new TransactionMessage({
+  payerKey: oracle.publicKey,
+  recentBlockhash: blockhash,
+  instructions: [depositUserIx],
+}).compileToV0Message();
+const tx = new VersionedTransaction(msg);
+
+// 2. Privy TEE signs for the user (sign-only, no broadcast)
+const signedBase64 = await signTransaction(userWalletId, serializedTx);
+
+// 3. Add oracle's signature (doesn't erase Privy's signature)
+const signedTx = VersionedTransaction.deserialize(Buffer.from(signedBase64, 'base64'));
+signedTx.sign([oracle]);
+
+// 4. Broadcast via our RPC (same one we got the blockhash from)
+await connection.sendTransaction(signedTx);
+```
+
+<Note>
+  `signTransaction` does **not** accept a `caip2` parameter (unlike `signAndSendTransaction`). It only needs `transaction` and `authorization_context`.
+</Note>
+
+## Escrow Program
+
+The `parlay_escrow` Solana program (Anchor-based) manages the on-chain state:
+
+### Accounts
+
+| Account | Description |
+|---------|-------------|
+| **Escrow PDA** | Stores parlay metadata (legs, stakes, status). Derived from `["parlay", parlay_id]` |
+| **Escrow Token Account** | Holds USDC deposits from both user and MM |
+
+### Instructions
+
+| Instruction | Description | Required Signers |
+|-------------|-------------|-----------------|
+| `create_parlay` | Creates escrow PDA + token account | `settlement_authority` (oracle), `escrow_token_account` |
+| `deposit_user` | Transfers user's USDC stake to escrow | `user` |
+| `deposit_mm` | Transfers MM's USDC risk to escrow | `mm` |
+| `settle` | Transfers all funds to winner | `settlement_authority` |
+| `cancel_parlay` | Returns deposits to both parties | `settlement_authority` |
+| `close_account` | Closes escrow PDA + token account | `settlement_authority` |
+
+### On-Chain Data Stored per Parlay
+
+After execution, the following data is stored in the database and visible in the UI:
+
+| Field | Description |
+|-------|-------------|
+| `escrow_pda` | Escrow account address (viewable on Solana Explorer) |
+| `escrow_token_account` | USDC token account holding deposits |
+| `create_tx` | Transaction signature for `create_parlay` |
+| `deposit_user_tx` | Transaction signature for `deposit_user` |
+| `deposit_mm_tx` | Transaction signature for `deposit_mm` |
+| `settle_tx` | Transaction signature for settlement (when resolved) |
+
+## Environment Variables
+
+### Backend (`rfq-apis`)
+
+| Variable | Description |
+|----------|-------------|
+| `ORACLE_KEYPAIR_PATH` | Path to oracle keypair JSON file |
+| `PRIVY_APP_ID` | Privy application ID |
+| `PRIVY_APP_SECRET` | Privy application secret |
+| `PRIVY_AUTHORIZATION_KEY` | EC P-256 private key (base64 PKCS8) for session signer authorization |
+
+### Frontend (`app`)
+
+| Variable | Description |
+|----------|-------------|
+| `NEXT_PUBLIC_PRIVY_APP_ID` | Privy application ID (public) |
+| `NEXT_PUBLIC_PRIVY_KEY_QUORUM_ID` | Key quorum ID for session signer setup |
+
+## Market Validation
+
+At RFQ submission time, only two checks are performed:
+
+1. **Market exists in cache** — ensures we have metadata for pricing
+2. **Market is active on Kalshi** — live API check confirms the market hasn't closed
+
+All other filtering (resolution window, volume, category) is done at display time in the frontend. If a market is shown in the UI, it's valid to bet on.

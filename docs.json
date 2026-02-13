@@ -19,6 +19,7 @@
               "index",
               "guides/authentication",
               "guides/lifecycle",
+              "guides/payment-architecture",
               "guides/websocket"
             ]
           }
