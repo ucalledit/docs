@@ -7,7 +7,7 @@
   },
   "servers": [
     {
-      "url": "https://api.totalis.com",
+      "url": "https://api.totalis.trade",
       "description": "Production"
     },
     {
