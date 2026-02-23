@@ -9,7 +9,7 @@ The Totalis API provides a WebSocket endpoint for real-time updates on RFQs and 
 
 ```
 ws://localhost:3000/ws        # Development
-wss://api.totalis.com/ws      # Production
+wss://api.totalis.trade/ws      # Production
 ```
 
 ## Authentication
@@ -94,7 +94,7 @@ Response:
 ## Example: Market Maker Bot
 
 ```javascript
-const ws = new WebSocket('wss://api.totalis.com/ws');
+const ws = new WebSocket('wss://api.totalis.trade/ws');
 
 ws.onopen = () => {
   // Authenticate

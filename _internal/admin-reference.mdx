@@ -12,7 +12,7 @@ description: 'Internal admin endpoints and authentication methods — not for pu
 Admin endpoints require a separate `x-admin-api-key` header:
 
 ```bash
-curl -X GET https://api.totalis.com/admin/api-keys \
+curl -X GET https://api.totalis.trade/admin/api-keys \
   -H "x-admin-api-key: <admin-key>"
 ```
 
@@ -23,7 +23,7 @@ This key is configured server-side via the `RFQ_ADMIN_API_KEY` environment varia
 For web applications using [Privy](https://privy.io) authentication. After a user logs in via Privy, the frontend receives a JWT token. This is used internally by the Totalis frontend — external API users should use API keys instead.
 
 ```bash
-curl -X GET https://api.totalis.com/rfqs \
+curl -X GET https://api.totalis.trade/rfqs \
   -H "Authorization: Bearer eyJhbGciOiJFUzI1NiIs..."
 ```
 
