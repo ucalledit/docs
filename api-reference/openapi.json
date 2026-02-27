@@ -1048,7 +1048,7 @@
       "apiKeyAuth": {
         "type": "apiKey",
         "in": "header",
-        "name": "UCALLEDIT_API_KEY",
+        "name": "TOTALIS_API_KEY",
         "description": "API key for programmatic access. Generate from the Totalis Dashboard. Format: `api_live_xxxxxxxxxxxxxxxxxxxxx`. Supported for REST API and WebSocket."
       }
     },

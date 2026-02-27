@@ -20,11 +20,11 @@ Generate an API key from the [Totalis Dashboard](https://app.totalis.trade):
 
 ## Using Your API Key
 
-Send your API key in the `UCALLEDIT_API_KEY` header with every request:
+Send your API key in the `TOTALIS_API_KEY` header with every request:
 
 ```bash
 curl -X GET https://api.totalis.trade/rfqs \
-  -H "UCALLEDIT_API_KEY: api_live_abc123def456ghi789"
+  -H "TOTALIS_API_KEY: api_live_abc123def456ghi789"
 ```
 
 For WebSocket connections, authenticate after connecting:
